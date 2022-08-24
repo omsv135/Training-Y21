@@ -1,0 +1,14 @@
+<launch>
+	<arg name="rviz_config" default="$(find demo_description)/rviz/config.rviz"/>
+
+	<arg name="xacro_file" default="$(find demo_description)/urdf/demo.xacro" />
+
+	<param name="robot_description" command="$(find xacro)/xacro $(arg xacro_file)" />
+
+	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" respawn="false">
+		<remap from="/joint_states" to="/demo/joint_states" />
+	</node>
+	<node pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" name="joint_state_publisher" respawn="false" />
+
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" required="true" respawn="false"/>
+</launch>

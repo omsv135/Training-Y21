@@ -1,0 +1,17 @@
+<launch>
+	<arg name="xacro_file" default="$(find demo_description)/urdf/demo.xacro" />
+
+	<param name="robot_description" command="$(find xacro)/xacro $(arg xacro_file)" />
+	<param name="use_sim_time" value="true" />
+
+	<include file="$(find demo_description)/launch/rviz.launch" pass_all_args="true" />
+	<include file="$(find demo_control)/launch/control.launch" pass_all_args="true" />
+	<include file="$(find demo_navigation)/launch/nav.launch" pass_all_args="true" />
+
+	<node name="gazebo" pkg="gazebo_ros" type="gzserver" args="$(find demo_gazebo)/worlds/demo_world.world">
+		<env name="GAZEBO_MODEL_PATH" value="$(find demo_gazebo)/models"/>
+	</node>
+	<node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" required="true"/>
+
+	<node name="demo_spawner" pkg="gazebo_ros" type="spawn_model" args="-unpause -urdf -x 0 -y 0 -z 0.2 -model demo_robot -param robot_description" respawn="false" output="screen" />
+</launch>

@@ -1,0 +1,5 @@
+<launch>
+	<node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" respawn="false" >
+		<remap from="/cmd_vel" to="/demo/diff_drive_controller/cmd_vel" />
+	</node>
+</launch>

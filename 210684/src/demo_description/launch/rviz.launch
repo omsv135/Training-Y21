@@ -1,0 +1,9 @@
+<launch>
+	<arg name="rviz_config" default="$(find demo_description)/rviz/config.rviz"/>
+
+	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" respawn="false">
+		<remap from="/joint_states" to="/demo/joint_states" />
+	</node>
+
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" />
+</launch>

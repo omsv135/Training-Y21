@@ -1,0 +1,7 @@
+<launch>
+	<arg name="control_file" default="$(find demo_control)/config/demo_control.yaml" />
+
+	<rosparam file="$(arg control_file)" command="load" />
+	
+	<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/demo" args="joint_state_controller diff_drive_controller" />
+</launch>

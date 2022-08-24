@@ -1,0 +1,264 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="demo_robot">
+
+	<xacro:property name="bodylen" value="0.8"/>
+	<xacro:property name="bodywid" value="0.5"/>
+	<xacro:property name="bodyhgt" value="0.2"/>
+	<xacro:property name="bodymass" value="5"/>
+
+	<xacro:property name="wheelhgt" value="0.1"/>
+	<xacro:property name="wheelrad" value="0.2"/>
+	<xacro:property name="wheelmass" value="1"/>
+
+	<xacro:property name="castormass" value="1" />
+	<xacro:property name="castorrad" value="${wheelrad - (bodyhgt/2)}" />
+
+	<xacro:property name="cameralen" value="0.04" />
+	<xacro:property name="camerawid" value="0.02" />
+	<xacro:property name="camerahgt" value="0.02" />
+	<xacro:property name="cameramass" value="0.05" />
+
+	<xacro:property name="laserlen" value="0.02" />
+	<xacro:property name="laserwid" value="0.02" />
+	<xacro:property name="laserhgt" value="0.02" />
+	<xacro:property name="lasermass" value="0.05" />
+
+	<xacro:property name="imulen" value="0.02" />
+	<xacro:property name="imuwid" value="0.02" />
+	<xacro:property name="imuhgt" value="0.02" />
+	<xacro:property name="imumass" value="0.02" />
+
+	<xacro:include filename="$(find demo_description)/urdf/materials.xacro" />
+
+	<xacro:macro name="body_geometry">
+		<geometry>
+			<box size="${bodylen} ${bodywid} ${bodyhgt}"/>
+		</geometry>
+	</xacro:macro>
+
+	<xacro:macro name="wheel_geometry">
+		<geometry>
+			<cylinder radius="${wheelrad}" length="${wheelhgt}" />
+		</geometry>
+	</xacro:macro>
+
+	<xacro:macro name="castor_geometry">
+		<geometry>
+			<sphere radius="${castorrad}" />
+		</geometry>
+	</xacro:macro>
+
+	<xacro:macro name="camera_geometry">
+		<geometry>
+			<box size="${cameralen} ${camerawid} ${camerahgt}" />
+		</geometry>
+	</xacro:macro>
+
+	<xacro:macro name="laser_geometry">
+		<geometry>
+			<box size="${laserlen} ${laserwid} ${laserhgt}" />
+		</geometry>
+	</xacro:macro>
+
+	<xacro:macro name="imu_geometry">
+		<geometry>
+			<box size="${imulen} ${imuwid} ${imuhgt}" />
+		</geometry>
+	</xacro:macro>
+
+	<link name="base_link">
+	</link>
+
+	<link name="chassis">
+		<inertial>
+			<mass value="${bodymass}"/>
+			<inertia 
+				ixx="${bodymass * ((bodyhgt*bodyhgt)+(bodylen*bodylen)) / 12}"
+				iyy="${bodymass * ((bodyhgt*bodyhgt)+(bodywid*bodywid)) / 12}"
+				izz="${bodymass * ((bodylen*bodylen)+(bodywid*bodywid)) / 12}"
+				ixy="0"
+				ixz="0"
+				iyz="0" />
+		</inertial>
+		<visual>
+			<xacro:body_geometry/>
+			<material name="orange"/>
+		</visual>
+		<collision>
+			<xacro:body_geometry/>
+		</collision>
+	</link>
+
+	<joint name="base_joint" type="fixed">
+		<parent link="base_link"/>
+		<child link="chassis" />
+	</joint>
+
+	<xacro:macro name="wheel_link_n_joint" params="prefix reflect">
+		<link name="${prefix}_wheel">
+			<inertial>
+				<mass value="${wheelmass}" />
+				<inertia 
+					ixx="${wheelmass * ((3*wheelrad*wheelrad) + (wheelhgt*wheelhgt)) / 12}"
+					iyy="${wheelmass * ((3*wheelrad*wheelrad) + (wheelhgt*wheelhgt)) / 12}"
+					izz="${wheelmass * wheelrad * wheelrad / 2}"
+					ixy="0"
+					ixz="0"
+					iyz="0" />
+			</inertial>
+			<visual>
+				<xacro:wheel_geometry />
+				<material name="white" />
+			</visual>
+			<collision>
+				<xacro:wheel_geometry />
+			</collision>
+		</link>
+		<joint name="${prefix}_wheel_joint" type="continuous">
+			<origin xyz="${-1 * bodylen/4} ${reflect * ((bodywid/2) + (wheelhgt/2))} 0" rpy="${-1*pi/2} 0 0"/>
+			<parent link="chassis" />
+			<child link="${prefix}_wheel"/>
+			<axis xyz="0 0 1" />
+		</joint>
+	</xacro:macro>
+	<xacro:wheel_link_n_joint prefix="left" reflect="1" />
+	<xacro:wheel_link_n_joint prefix="right" reflect="-1" />
+
+	<link name="castor_wheel">
+		<inertial>
+			<mass value="${castormass}" />
+			<xacro:property name="castor_MOI" value="${2 * castormass * castorrad*castorrad/5}" />
+			<inertia
+				ixx="${castor_MOI}"
+				iyy="${castor_MOI}"
+				izz="${castor_MOI}"
+				ixy="0"
+				ixz="0"
+				iyz="0" />
+		</inertial>
+		<visual>
+			<xacro:castor_geometry />
+			<material name="white" />
+		</visual>
+		<collision>
+			<xacro:castor_geometry />
+		</collision>
+	</link>
+	<joint name="castor_joint" type="fixed">
+		<origin xyz="${bodylen/4} 0 ${-1 * bodyhgt/2}" />
+		<parent link="chassis" />
+		<child link="castor_wheel" />
+	</joint>
+
+	<xacro:macro name="front_camera_n_joint" params="prefix reflect">
+		<link name="${prefix}_camera">
+			<inertial>
+				<mass value="${cameramass}" />
+				<inertia 
+					ixx="${cameramass * ((camerahgt*camerahgt)+(cameralen*cameralen)) / 12}"
+					iyy="${cameramass * ((camerahgt*camerahgt)+(camerawid*camerawid)) / 12}"
+					izz="${cameramass * ((cameralen*cameralen)+(camerawid*camerawid)) / 12}"
+					ixy="0"
+					ixz="0"
+					iyz="0"
+				/>
+			</inertial>
+			<visual>
+				<xacro:camera_geometry />
+				<material name="blue" />
+			</visual>
+			<collision>
+				<xacro:camera_geometry />
+			</collision>
+		</link>
+		<joint name="${prefix}_camera_joint" type="fixed">
+			<origin xyz="${(bodylen/2) - (cameralen/2)} ${reflect*((bodywid/2)-(camerawid/2))} ${(bodyhgt/2)+(camerahgt/2)}" />
+			<parent link="chassis" />
+			<child link="${prefix}_camera" />
+		</joint>
+	</xacro:macro>
+
+	<xacro:front_camera_n_joint prefix="left" reflect="1" />
+	<xacro:front_camera_n_joint prefix="right" reflect="-1" />
+
+	<link name="back_camera">
+		<inertial>
+			<mass value="${cameramass}" />
+			<inertia 
+				ixx="${cameramass * ((camerahgt*camerahgt)+(cameralen*cameralen)) / 12}"
+				iyy="${cameramass * ((camerahgt*camerahgt)+(camerawid*camerawid)) / 12}"
+				izz="${cameramass * ((cameralen*cameralen)+(camerawid*camerawid)) / 12}"
+				ixy="0"
+				ixz="0"
+				iyz="0"
+			/>
+		</inertial>
+		<visual>
+			<xacro:camera_geometry />
+			<material name="blue" />
+		</visual>
+		<collision>
+			<xacro:camera_geometry />
+		</collision>
+	</link>
+	<joint name="back_camera_joint" type="fixed">
+		<origin xyz="${-(bodylen/2) + (cameralen/2)} 0 ${(bodyhgt/2)+(camerahgt/2)}" rpy="0 0 ${pi}"/>
+		<parent link="chassis" />
+		<child link="back_camera" />
+	</joint>
+
+	<link name="laser_link">
+		<inertial>
+			<mass value="${lasermass}" />
+			<inertia 
+				ixx="${lasermass * ((laserhgt*laserhgt)+(laserlen*laserlen)) / 12}"
+				iyy="${lasermass * ((laserhgt*laserhgt)+(laserwid*laserwid)) / 12}"
+				izz="${lasermass * ((laserlen*laserlen)+(laserwid*laserwid)) / 12}"
+				ixy="0"
+				ixz="0"
+				iyz="0"
+			/>
+		</inertial>
+		<visual>
+			<xacro:laser_geometry />
+			<material name="red" />
+		</visual>
+		<collision>
+			<xacro:laser_geometry />
+		</collision>
+	</link>
+	<joint name="laser_joint" type="fixed">
+		<origin xyz="0 0 ${(bodyhgt/2)+(laserhgt/2)}" rpy="0 0 0"/>
+		<parent link="chassis" />
+		<child link="laser_link" />
+	</joint>
+
+	<link name="imu_link">
+		<inertial>
+			<mass value="${imumass}" />
+			<inertia 
+				ixx="${imumass * ((imuhgt*imuhgt)+(imulen*imulen)) / 12}"
+				iyy="${imumass * ((imuhgt*imuhgt)+(imuwid*imuwid)) / 12}"
+				izz="${imumass * ((imulen*imulen)+(imuwid*imuwid)) / 12}"
+				ixy="0"
+				ixz="0"
+				iyz="0"
+			/>
+		</inertial>
+		<visual>
+			<xacro:imu_geometry />
+			<material name="green" />
+		</visual>
+		<collision>
+			<xacro:imu_geometry />
+		</collision>
+	</link>
+	<joint name="imu_joint" type="fixed">
+		<origin xyz="${-(laserlen)-(imulen/2)} 0 ${(bodyhgt/2)+(imuhgt/2)}" rpy="0 0 0"/>
+		<parent link="chassis" />
+		<child link="imu_link" />
+	</joint>
+
+	<xacro:include filename="$(find demo_description)/urdf/gazebo.xacro" />
+	<xacro:include filename="$(find demo_description)/urdf/transmissions.xacro" />
+</robot>

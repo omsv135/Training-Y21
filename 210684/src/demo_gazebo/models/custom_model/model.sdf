@@ -1,0 +1,86 @@
+<?xml version="1.0" ?>
+<sdf version='1.7'>
+	<model name="custom_model">
+		<static>0</static>
+		<pose>0 0 0.5 0 -0 0</pose>
+		<link name="torso">
+			<inertial>
+				<mass>1</mass>
+				<pose>0 0 0 0 -0 0</pose>
+				<inertia>
+					<ixx>0.145833</ixx>
+					<ixy>0</ixy>
+					<ixz>0</ixz>
+					<iyy>0.145833</iyy>
+					<iyz>0</iyz>
+					<izz>0.125</izz>
+				</inertia>
+			</inertial>
+			<collision name="collision">
+				<pose>0 0 0 0 -0 0</pose>
+				<geometry>
+					<cylinder>
+						<radius>0.5</radius>
+						<length>1</length>
+					</cylinder>
+				</geometry>
+			</collision>
+			<visual name="visual">
+				<pose>0 0 0 0 -0 0</pose>
+				<material>
+					<emissive>0 0 0 1</emissive>
+					<ambient>0.006 0.204 0.024 1</ambient>
+					<diffuse>0.006 0.604 0.024 1</diffuse>
+					<specular>0.01 0.01 0.01 1</specular>
+				</material>
+				<geometry>
+					<cylinder>
+						<radius>0.5</radius>
+						<length>1</length>
+					</cylinder>
+				</geometry>
+			</visual>
+		</link>
+		<link name="head">
+			<pose>0 0 0.75 0 -0 0</pose>
+			<inertial>
+				<mass>0.25</mass>
+				<pose>0 0 0 0 -0 0</pose>
+				<inertia>
+					<ixx>0.0416667</ixx>
+          			<ixy>0</ixy>
+          			<ixz>0</ixz>
+          			<iyy>0.0416667</iyy>
+          			<iyz>0</iyz>
+          			<izz>0.0416667</izz>
+				</inertia>
+			</inertial>
+			<collision name="collision">
+				<pose>0 0 0 0 -0 0</pose>
+				<geometry>
+					<box>
+						<size>0.5 0.5 0.5</size>
+					</box>
+				</geometry>
+			</collision>
+			<visual name="visual">
+				<pose>0 0 0 0 -0 0</pose>
+				<material>
+					<emissive>0 0 0 1</emissive>
+					<ambient>0.006 0.204 0.024 1</ambient>
+					<diffuse>0.006 0.604 0.024 1</diffuse>
+					<specular>0.01 0.01 0.01 1</specular>
+				</material>
+				<geometry>
+					<box>
+						<size>0.5 0.5 0.5</size>
+					</box>
+				</geometry>
+			</visual>
+		</link>
+		<joint name="fixed_joint" type="fixed">
+			<parent>torso</parent>
+			<child>head</child>
+		</joint>
+	</model>
+</sdf>
